@@ -28,6 +28,8 @@ app.config['suppress_callback_exceptions'] = True
 
 mapbox_access_token = "pk.eyJ1IjoibXlkYXNoYW5hbHlzaXMiLCJhIjoiY2pjcDAzbW91MGdibDMybWlocTVjeGMxNyJ9.VzA-rhWiCG4MsRRaeJfvvw"
 
+#Add column names
+#parse them
 
 #find the previous date before 8:00 AM of a specific date (base_time)
 def nearest_previous_date(baseDate, dates):
