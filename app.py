@@ -274,6 +274,7 @@ def is_idle(cars_dict):
     return idle_cars
     
 
+
 # file upload function and clean data, return a dataframe
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
@@ -367,6 +368,7 @@ app.layout = html.Div([
         dcc.DatePickerSingle(
             id='date-picker-single',
             date= (datetime.utcnow()).date()
+
         )
     ]),
 
@@ -507,9 +509,11 @@ def update_output(contents, filename):
 #def update_graph_daily(daily_dropdown_value, table_rows):
 def update_graph_daily(daily_dropdown_value, table_rows):
     
+
     time_ = datetime.strptime("7:59:59", '%H:%M:%S').time()
     date_ = (datetime.strptime(daily_dropdown_value, '%Y-%m-%d')).date()
     base_time = datetime.combine(date_, time_)
+
     
         
     #base_time = datetime.datetime.strptime(daily_dropdown_value, '%Y-%m-%d %H:%M')
@@ -562,6 +566,7 @@ def update_graph_daily(daily_dropdown_value, table_rows):
                 cmax = 1,
                 #reversescale= True,
                 #symbol = 'rail',
+
                 opacity= 1,
                 
                 
@@ -709,6 +714,7 @@ def update_stackbar(table_rows):
             width = 1)
     )
     )  ,
+
             go.Bar(
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[9]]),
@@ -721,8 +727,10 @@ def update_stackbar(table_rows):
             color = 'rgba(102, 0, 0, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[1]]),
     name=list_of_horizaontal_barchart_columns[1],
@@ -734,8 +742,10 @@ def update_stackbar(table_rows):
             color = 'rgba(240, 171, 0, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[8]]),
     name=list_of_horizaontal_barchart_columns[8],
@@ -747,8 +757,10 @@ def update_stackbar(table_rows):
             color = 'rgba(158, 71, 80, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[2]]),
     name=list_of_horizaontal_barchart_columns[2],
@@ -760,8 +772,10 @@ def update_stackbar(table_rows):
             color = 'rgba(58, 171, 80, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[7]]),
     name=list_of_horizaontal_barchart_columns[7],
@@ -773,8 +787,10 @@ def update_stackbar(table_rows):
             color = 'rgba(58, 71, 180, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[3]]),
     name=list_of_horizaontal_barchart_columns[3],
@@ -786,8 +802,10 @@ def update_stackbar(table_rows):
             color = 'rgba(204, 0, 204, 1.0)',
             width = 1)
     )
+
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[4]]),
     name=list_of_horizaontal_barchart_columns[4],
@@ -801,6 +819,7 @@ def update_stackbar(table_rows):
     )
     ),
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[5]]),
     name=list_of_horizaontal_barchart_columns[5],
@@ -814,6 +833,7 @@ def update_stackbar(table_rows):
     )
     ) ,
     go.Bar(
+
     y=names,
     x=list(traces_df[list_of_horizaontal_barchart_columns[6]]),
     name=list_of_horizaontal_barchart_columns[6],
@@ -825,9 +845,11 @@ def update_stackbar(table_rows):
             color = 'rgba(158, 71, 180, 1.0)',
             width = 1)
     )
+
     )
 
     ], 
+
             'layout': go.Layout(
                 barmode='stack',
                 title = 'Cycle Time/Dwell Time of Cars in Days', 
@@ -836,6 +858,7 @@ def update_stackbar(table_rows):
                 margin = Margin(l = 280)
             )
     }
+
 
 
 
@@ -1021,7 +1044,9 @@ def update_stackbar(table_rows):
                 width = 1)
         )
     )
+
     ], 
+
     'layout': go.Layout(
         barmode='stack',
         title = 'Duration of Travel Time/Dwell Time of Cities in Days',
