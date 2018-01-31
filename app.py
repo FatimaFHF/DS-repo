@@ -166,9 +166,9 @@ def idle_car(base_date, data_frame):
     city_1 = row_1['City'].squeeze() #return tha scalar value of the dataframe
     city_2 = row_2['City'].squeeze()
     if (city_1 == city_2):
-        return True
+        return 0
     else: 
-        return False
+        return 1
 
 
 #range of dates that are appropriate to find out dwell cars
@@ -366,13 +366,45 @@ app.layout = html.Div([
         html.H6("Select a date to view the location of the rail-cars"),
         dcc.DatePickerSingle(
             id='date-picker-single',
-            date= datetime.utcnow()
+            date= (datetime.utcnow()).date()
         )
     ]),
 
     html.Br(),
     html.H5("Daily Location Of Railcars"),
-    html.Div(dcc.Graph(id="mapbox-graph")),
+    html.Div(
+        dcc.Graph(
+            id="mapbox-graph",
+            figure = {
+                'data': [go.Scattermapbox(
+                    lat = 49.258682,
+                    lon = -122.766464,
+                    mode='markers',
+                    marker=Marker(
+                        size=14,
+                        symbol = 'rail',
+                        opacity= 1,
+                    ),
+                #text = results["AssetID"],
+                )],
+                'layout': go.Layout(
+                    title = 'Daily Railcars Location at 7:59' ,
+                    mapbox=dict(
+                        accesstoken=mapbox_access_token,
+                        bearing=0,
+                        center=dict(
+                            lat = 49.258682,
+                            lon = -122.766464,
+                        ),
+                        pitch=0,
+                        zoom=5,  
+                    ),
+                    height = 800,
+                    width = 1200
+                )
+            }
+        )
+    ),
 
     #mapbox-graph
 
@@ -380,14 +412,8 @@ app.layout = html.Div([
     html.Br(),
     html.Div([
         html.H3("Dwell Report"),
-    ], 
-        #style={'width': '48%', 'float': 'center', 'display': 'inline-block'}
-        ),
+    ], ),
     
-    html.Div([
-            html.Table(id='Dwell-table-duration')], 
-            style={'width': '49%','display': 'inline-block', 'padding': '0 20'}
-            ),
 
     html.Div([
         
@@ -415,10 +441,36 @@ app.layout = html.Div([
 
 
     html.Div([
-        dcc.Graph(id ='idle_cars_stackbar')
-    ])
-    
+        dcc.Graph(
+            id ='idle_cars_stackbar', 
+            figure = {
+                'data' : [
+                    {'x': ['2018-1-1'] , 'y': [10] , 'type': 'bar' , 'color': '(255,51,51)' , 'name': 'Idle cars'},
+                    {'x': ['2018-1-1'], 'y': [4], 'type' : 'bar' , 'color': 'rgb(0,155,0)', 'name': 'Not idle'}
+                ],
+                'layout': {
+                    'title' : 'Idle Cars',
+                    'barmode' : 'stack'
+                }
+            }
+        )
+    ]),
 
+
+    html.Br(),
+    html.Div([
+        html.H3("Cycle Time Report"),
+    ], 
+        #style={'width': '48%', 'float': 'center', 'display': 'inline-block'}
+        ),
+    
+    html.Div([
+        dcc.Graph(id ='cars-cycle-time-horizontal-chart')
+    ]),
+
+    html.Div([
+        dcc.Graph(id ='cities-travel-time-horizontal-chart')
+    ]),
 ])
 
 
@@ -455,11 +507,9 @@ def update_output(contents, filename):
 #def update_graph_daily(daily_dropdown_value, table_rows):
 def update_graph_daily(daily_dropdown_value, table_rows):
     
-    time_ = datetime.strptime("7:59", '%H:%M').time()
+    time_ = datetime.strptime("7:59:59", '%H:%M:%S').time()
     date_ = (datetime.strptime(daily_dropdown_value, '%Y-%m-%d')).date()
     base_time = datetime.combine(date_, time_)
-
-    today = datetime.utcnow()
     
         
     #base_time = datetime.datetime.strptime(daily_dropdown_value, '%Y-%m-%d %H:%M')
@@ -472,10 +522,6 @@ def update_graph_daily(daily_dropdown_value, table_rows):
     times = pd.to_datetime(df_['utc_time'], format= '%Y-%m-%d %H:%M:%S')
     #append the times as utc_time column to the dataframe
     df_.loc[:, "utc_time"] = pd.Series(times , index = df_.index)
-
-
-
-
             
     #slice by required columns
     #required_columns_list = ['AssetID','utc_time', 'City', 'Province','Country','Latitude','Longitude']
@@ -510,12 +556,12 @@ def update_graph_daily(daily_dropdown_value, table_rows):
             mode='markers',
             marker=Marker(
                 size=14,
-                #colorscale= scl,
-                #color = list(results_2['idle']),
-                #cmin= 0,
-                #cmax = 1,
+                colorscale= scl,
+                color = list(results_2['idle']),
+                cmin= 0,
+                cmax = 1,
                 #reversescale= True,
-                symbol = 'rail',
+                #symbol = 'rail',
                 opacity= 1,
                 
                 
@@ -523,7 +569,7 @@ def update_graph_daily(daily_dropdown_value, table_rows):
             text = results["AssetID"],
         )],
         'layout': go.Layout(
-            title = 'Daily map location at ' + base_time.strftime("%Y-%m-%d %H:%M:%S"),
+            title = 'Daily Railcars Location at ' + base_time.strftime("%Y-%m-%d %H:%M:%S"),
             mapbox=dict(
                 accesstoken=mapbox_access_token,
                 bearing=0,
@@ -615,8 +661,380 @@ def update_stackbar(table_rows):
                 name = 'Not idle',
                 marker = Marker(color = 'rgb(0,155,0)')
                 )], 
-            'layout': go.Layout(barmode = 'stack')
+            'layout': go.Layout(
+                barmode = 'stack', 
+                title = 'Idle Cars',
+                xaxis = XAxis(
+                    title = 'Date - Dec 13/2017 to Jan 16/2018'
+                ),
+                yaxis = YAxis(
+                    title = 'Number'
+                )
+                )
     }
+
+
+
+
+
+
+
+
+
+
+@app.callback(
+    Output('cars-cycle-time-horizontal-chart', 'figure'),
+    [Input('table', 'rows')]
+)
+def update_stackbar(table_rows):
+    
+    list_of_horizaontal_barchart_columns = ['Clavet', 'Edmonton', 'Port Coquitlam', 'East Hoquiam', 'Clavet to Port Coquitlam', 'Port Coquitlam to Clavet', 'East Hoquiam to Edmonton', 'Port Coquitlam to East Hoquiam', 'Edmonton to Port Coquitlam', 'Clavet to Edmonton']
+    traces = {'CGAX9054': [1, 0, 22, 0, 2, 0, 0, 0, 0, 0], 'CGAX9440': [0, 0, 12, 0, 2, 0, 0, 0, 0, 0], 'CGEX1089': [0, 0, 4, 0, 0, 0, 0, 0, 0, 0], 'CGEX1348': [0, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'CGEX1456': [0, 0, 3, 0, 15, 0, 0, 0, 0, 0], 'CGEX1480': [2, 0, 15, 0, 2, 4, 0, 0, 0, 0], 'CGEX1584': [2, 0, 15, 0, 2, 4, 0, 0, 0, 0], 'CGEX1787': [2, 0, 4, 0, 0, 4, 0, 0, 0, 0], 'CGEX1797': [1, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'CGOX5460': [0, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'GATX26893': [9, 1, 0, 1, 0, 0, 9, 6, 2, 2], 'GATX26921': [9, 0, 0, 1, 0, 0, 9, 6, 2, 1], 'GATX35120': [9, 1, 0, 1, 0, 0, 9, 5, 2, 2], 'GATX94155': [8, 5, 0, 2, 0, 0, 0, 8, 2, 2]}
+
+    traces_df = pd.DataFrame.from_dict(traces, orient= 'index')
+    traces_df.columns = list_of_horizaontal_barchart_columns
+    names = list(traces.keys())
+
+    return {
+        'data' : [ go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[0]]),
+    name=list_of_horizaontal_barchart_columns[0],
+    orientation = 'h',
+    width = [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8],
+    marker = dict(
+        color = 'rgba(255, 0, 0, 0.6)',
+        line = dict(
+            color = 'rgba(255, 0, 0, 1.0)',
+            width = 1)
+    )
+    )  ,
+            go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[9]]),
+    name=list_of_horizaontal_barchart_columns[9],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(102, 0, 0, 0.6)',
+        line = dict(
+            color = 'rgba(102, 0, 0, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[1]]),
+    name=list_of_horizaontal_barchart_columns[1],
+    orientation = 'h',
+    width = [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8],
+    marker = dict(
+        color = 'rgba(240, 171, 80, 0.6)',
+        line = dict(
+            color = 'rgba(240, 171, 0, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[8]]),
+    name=list_of_horizaontal_barchart_columns[8],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(158, 71, 80, 0.6)',
+        line = dict(
+            color = 'rgba(158, 71, 80, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[2]]),
+    name=list_of_horizaontal_barchart_columns[2],
+    orientation = 'h',
+    width = [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8],
+    marker = dict(
+        color = 'rgba(58, 171, 80, 0.6)',
+        line = dict(
+            color = 'rgba(58, 171, 80, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[7]]),
+    name=list_of_horizaontal_barchart_columns[7],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(58, 71, 180, 0.6)',
+        line = dict(
+            color = 'rgba(58, 71, 180, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[3]]),
+    name=list_of_horizaontal_barchart_columns[3],
+    orientation = 'h',
+    width = [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8],
+    marker = dict(
+        color = 'rgba(204, 0, 204, 0.6)',
+        line = dict(
+            color = 'rgba(204, 0, 204, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[4]]),
+    name=list_of_horizaontal_barchart_columns[4],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(58, 101, 80, 0.6)',
+        line = dict(
+            color = 'rgba(58, 101, 80, 1.0)',
+            width = 1)
+    )
+    ),
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[5]]),
+    name=list_of_horizaontal_barchart_columns[5],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(58, 171, 0, 0.6)',
+        line = dict(
+            color = 'rgba(58, 171, 0, 1.0)',
+            width = 1)
+    )
+    ) ,
+    go.Bar(
+    y=names,
+    x=list(traces_df[list_of_horizaontal_barchart_columns[6]]),
+    name=list_of_horizaontal_barchart_columns[6],
+    orientation = 'h',
+    width = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    marker = dict(
+        color = 'rgba(158, 71, 180, 0.6)',
+        line = dict(
+            color = 'rgba(158, 71, 180, 1.0)',
+            width = 1)
+    )
+    )
+
+    ], 
+            'layout': go.Layout(
+                barmode='stack',
+                title = 'Cycle Time/Dwell Time of Cars in Days', 
+                xaxis = XAxis(title = 'Days' ),
+                yaxis = YAxis( dtick = 1 , title = 'Railcars'),
+                margin = Margin(l = 280)
+            )
+    }
+
+
+
+@app.callback(
+    Output('cities-travel-time-horizontal-chart', 'figure'),
+    [Input('table', 'rows')]
+)
+def update_stackbar(table_rows):
+    
+    list_of_horizaontal_barchart_columns = ['Clavet', 'Edmonton', 'Port Coquitlam', 'East Hoquiam', 'Clavet to Port Coquitlam', 'Port Coquitlam to Clavet', 'East Hoquiam to Edmonton', 'Port Coquitlam to East Hoquiam', 'Edmonton to Port Coquitlam', 'Clavet to Edmonton']
+    traces = {'CGAX9054': [1, 0, 22, 0, 2, 0, 0, 0, 0, 0], 'CGAX9440': [0, 0, 12, 0, 2, 0, 0, 0, 0, 0], 'CGEX1089': [0, 0, 4, 0, 0, 0, 0, 0, 0, 0], 'CGEX1348': [0, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'CGEX1456': [0, 0, 3, 0, 15, 0, 0, 0, 0, 0], 'CGEX1480': [2, 0, 15, 0, 2, 4, 0, 0, 0, 0], 'CGEX1584': [2, 0, 15, 0, 2, 4, 0, 0, 0, 0], 'CGEX1787': [2, 0, 4, 0, 0, 4, 0, 0, 0, 0], 'CGEX1797': [1, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'CGOX5460': [0, 0, 15, 0, 2, 0, 0, 0, 0, 0], 'GATX26893': [9, 1, 0, 1, 0, 0, 9, 6, 2, 2], 'GATX26921': [9, 0, 0, 1, 0, 0, 9, 6, 2, 1], 'GATX35120': [9, 1, 0, 1, 0, 0, 9, 5, 2, 2], 'GATX94155': [8, 5, 0, 2, 0, 0, 0, 8, 2, 2]}
+
+    traces_df = pd.DataFrame.from_dict(traces, orient= 'index')
+    traces_df.columns = list_of_horizaontal_barchart_columns
+    cars = list(traces.keys())
+    names = list_of_horizaontal_barchart_columns
+    return {
+        'data' : [ go.Bar(
+            y=names,
+            x=list(traces_df.iloc[0]),  
+        name=cars[0],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(255, 0, 0, 0.6)',
+        line = dict(
+            color = 'rgba(255, 0, 0, 1.0)',
+            width = 1)
+        )
+        ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[1]),
+        name=cars[1],
+        orientation = 'h',
+        marker = dict(  
+            color = 'rgba(102, 0, 0, 0.6)',
+        line = dict(
+            color = 'rgba(102, 0, 0, 1.0)',
+            width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[2]),
+        name=cars[2],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(240, 171, 80, 0.6)',
+            line = dict(
+            color = 'rgba(240, 171, 0, 1.0)',
+            width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[3]),
+        name=cars[3],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(158, 71, 80, 0.6)',
+            line = dict(
+                color = 'rgba(158, 71, 80, 1.0)',
+                width = 1)
+         )  
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[4]),
+        name=cars[4],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(58, 171, 80, 0.6)',
+            line = dict(
+                color = 'rgba(58, 171, 80, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[5]),
+        name=cars[5],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(58, 71, 180, 0.6)',
+            line = dict(
+                color = 'rgba(58, 71, 180, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[6]),
+        name=cars[6],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(204, 0, 204, 0.6)',
+            line = dict(
+                color = 'rgba(204, 0, 204, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[7]),
+        name=cars[7],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(58, 101, 80, 0.6)',
+            line = dict(
+                color = 'rgba(58, 101, 80, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[8]),
+        name=cars[8],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(58, 171, 0, 0.6)',
+            line = dict(
+                color = 'rgba(58, 171, 0, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[9]),
+        name=cars[9],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(158, 71, 180, 0.6)',
+            line = dict(
+                color = 'rgba(158, 71, 180, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[10]),
+        name=cars[10],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(10, 1, 180, 0.6)',
+            line = dict(
+                color = 'rgba(158, 71, 180, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[11]),
+        name=cars[11],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(158, 10, 0, 0.6)',
+            line = dict(
+                color = 'rgba(158, 71, 180, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[12]),
+        name=cars[12],
+        orientation = 'h',
+        marker = dict(
+            color = 'rgba(100, 71, 180, 0.6)',
+            line = dict(
+               color = 'rgba(158, 71, 180, 1.0)',
+                width = 1)
+        )
+    ),
+    go.Bar(
+        y=names,
+        x=list(traces_df.iloc[13]),
+        name=cars[13],
+        orientation = 'h',
+        marker = dict(      
+            color = 'rgba(158, 171, 180, 0.6)',
+            line = dict(
+                color = 'rgba(158, 71, 180, 1.0)',
+                width = 1)
+        )
+    )
+    ], 
+    'layout': go.Layout(
+        barmode='stack',
+        title = 'Duration of Travel Time/Dwell Time of Cities in Days',
+        xaxis = XAxis(title = 'Days' ),
+        yaxis = YAxis( dtick = 1),
+        margin = Margin(l = 280)
+        )
+}
+
+
+
+
+
 
 
 app.css.append_css({
