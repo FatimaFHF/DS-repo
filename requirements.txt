@@ -39,7 +39,7 @@ dash-core-components==0.16.0
 dash-html-components==0.8.0
 dash-renderer==0.11.1
 dash-table-experiments==0.5.4
-dask==0.15.3
+dask==2021.10.0
 datashape==0.5.4
 decorator==4.2.1
 distributed==1.19.1
